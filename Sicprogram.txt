@@ -1,0 +1,46 @@
+COPY      START  1000                COPY FILE FROM INPUT TO OUTPUT 
+FIRST     STL    RETADR              SAVE RETURN ADDRESS
+CLOOP     JSUB   RDREC               READ INPUT RECORD
+          LDA    LENGTH              TEST FOR EOF (LENGTH=0)    
+          COMP       
+          JEQ    ENDFIL              EXIT IF EOF FOUND 
+          JSUB   WRREC               WRITE OUTPUT RECORD
+          J      CLOOP               LOOP
+.THIS IS A COMMENT
+ENDFIL    LDA    =C'EOF'             INSERT END OF FILE MARKER 
+          STA    BUFFER
+          LDA    THREE               SET LENGTH =3
+          STA    LENGTH              
+          JSUB   WRREC               WRITE EOF
+          LDL    RETADR              GET RETURN ADDRESS 
+          RSUB
+          LTORG                      RETURN TO CALLER
+THREE     WORD   3  
+.THIS IS A COMMENT                                   
+RETADR    RESW   1 
+LENGTH    RESW   1                   LENGTH OF RECORD 
+BUFFER    RESB   4096                4096-BYTE BUFFER AREA 
+RDREC     LDX    =X'00'              CLEAR LOOP COUNTER 
+          LDA    =X'00'              CLEAR A TO ZERO 
+RLOOP     TD     =X'F1'              TEST INPUT DEVICE 
+          JEQ    RLOOP               LOOP UNTIL READY 
+          RD     INPUT               READ CHARACTER INTO REGISTER A 
+          COMP   =X'00'              TEST FOR END OF RECORD (X'00')
+          JEQ    EXIT                EXIT LOOP IF FOR 
+          STCH   BUFFER,X            STORE CHARACTER IN BUFFER 
+          TIX    MAXLEN              LOOP UNLESS MAX LENGTH 
+          JLT    RLOOP               HAS BEEN REACHED 
+EXIT      STX    LENGTH              SAVE RECORD LENGTH 
+          RSUB                       RETURN TO CALLER
+MAXLEN    WORD   4096 
+.THIS IS A COMMENT
+WRREC     LDX    ZERO                CLEAR LOOP COUNTER
+WLOOP     TD     OUTPUT              TEST OUTPUT DEVICE 
+          JEQ    WLOOP               LOOP UNTIL READY 
+          LDCH   BUFFER,X            GET CHARACTER FROM BUFFER
+          WD     =X'05'              WRITE CHARACTER
+          TIX    LENGTH              LOOP UNTIL ALL CHARACTERS 
+          JLT    WLOOP               HAVE BEEN WRITTEN 
+I          RSUB                       RETURN TO CALLER
+.THIS IS A COMMENT
+          END    FIRST

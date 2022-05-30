@@ -1,0 +1,26 @@
+THIS IS THE SYSTEM PROGRAMMING COURSE PROJECT USING PYTHON
+SIC ASSEMBLER ---> PASS ONE 
+THE TEAM MEMBER IS :
+1-SALLY MANASRAH
+2-ASEEL IKHLAYEL
+
+
+
+
+
+
+
+ 
+
+
+             
+                     
+
+
+
+
+
+
+
+
+         

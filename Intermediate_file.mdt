@@ -1,0 +1,45 @@
+1000   COPY      START  1000                COPY FILE FROM INPUT TO OUTPUT 
+1000   FIRST     STL    RETADR              SAVE RETURN ADDRESS
+1003   CLOOP     JSUB   RDREC               READ INPUT RECORD
+1006             LDA    LENGTH              TEST FOR EOF (LENGTH=0)    
+1009             COMP   ZERO    
+100c             JEQ    ENDFIL              EXIT IF EOF FOUND 
+100f             JSUB   WRREC               WRITE OUTPUT RECORD
+1012             J      CLOOP               LOOP
+1015   ENDFIL    LDA    EOF                 INSERT END OF FILE MARKER 
+1018             STA    BUFFER
+101b             LDA    THREE               SET LENGTH =3
+101e             STA    LENGTH              
+1021             JSUB   WRREC               WRITE EOF
+1024             LDL    RETADR              GET RETURN ADDRESS 
+1027             RSUB
+102a   EOF       BYTE   C'EOF'
+102d   THREE     WORD   3
+1030   ZERO      WORD   0                                    
+1033   RETADR    RESW   1 
+1036   LENGTH    RESW   1                   LENGTH OF RECORD 
+1039   BUFFER    RESB   4096                4096-BYTE BUFFER AREA 
+2039   RDREC     LDX    ZERO                CLEAR LOOP COUNTER 
+203c             LDA    ZERO                CLEAR A TO ZERO 
+203f   RLOOP     TD     INPUT               TEST INPUT DEVICE 
+2042             JEQ    RLOOP               LOOP UNTIL READY 
+2045             RD     INPUT               READ CHARACTER INTO REGISTER A 
+2048             COMP   ZERO                TEST FOR END OF RECORD (X'00')
+204b             JEQ    EXIT                EXIT LOOP IF FOR 
+204e             STCH   BUFFER,X            STORE CHARACTER IN BUFFER 
+2051             TIX    MAXLEN              LOOP UNLESS MAX LENGTH 
+2054             JLT    RLOOP               HAS BEEN REACHED 
+2057   EXIT      STX    LENGTH              SAVE RECORD LENGTH 
+205a             RSUB
+205d   INPUT     BYTE   X'F1'               RETURN TO CALLER
+205e   MAXLEN    WORD   4096 
+2061   WRREC     LDX    ZERO                CLEAR LOOP COUNTER
+2064   WLOOP     TD     OUTPUT              TEST OUTPUT DEVICE 
+2067             JEQ    WLOOP               LOOP UNTIL READY 
+206a             LDCH   BUFFER,X            GET CHARACTER FROM BUFFER
+206d             WD     OUTPUT              WRITE CHARACTER
+2070             TIX    LENGTH              LOOP UNTIL ALL CHARACTERS 
+2073             JLT    WLOOP               HAVE BEEN WRITTEN 
+2076             RSUB
+2079   OUTPUT    BYTE   X'05'               RETURN TO CALLER
+207a             END    FIRST
